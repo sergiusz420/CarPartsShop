@@ -74,5 +74,17 @@ namespace CarPartsShop.Controllers
 
             return Ok("Account details have been updated..");
         }
+
+        [AllowAnonymous]
+        [HttpPost("reset-password")]
+        public IActionResult ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var user = TempDb.Customers.FirstOrDefault(u => u.Email == dto.Email);
+            if (user == null) return NotFound("User not found.");
+
+            user.Password = dto.NewPassword;
+
+            return Ok("Password has been changed");
+        }
     }
 }
