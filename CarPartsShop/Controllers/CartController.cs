@@ -1,5 +1,6 @@
 ﻿using CarPartsShop.Data;
 using CarPartsShop.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarPartsShop.Controllers
@@ -52,5 +53,43 @@ namespace CarPartsShop.Controllers
             item.Deleted = true;
             return NoContent();
         }
+
+        [Authorize]
+        [HttpPost("process")]
+        public IActionResult ProcessCart()
+        {
+            var email = User.Identity?.Name;
+
+            var cartItems = TempDb.CartItems.Where(c => c.CustomerEmail == email && !c.Processed).ToList();
+
+            if (!cartItems.Any())
+                return BadRequest("Cart is empty or already processed.");
+
+            var receipt = new Receipt
+            {
+                Id = TempDb.Receipts.Count + 1,
+                CustomerEmail = email,
+                Items = cartItems.Select(item => new CartItem
+                {
+                    ProductId = item.ProductId,
+                    ProductName = item.ProductName,
+                    Quantity = item.Quantity,
+                    Price = item.Price,
+                    CustomerEmail = item.CustomerEmail
+                }).ToList(),
+                TotalAmount = cartItems.Sum(i => i.Price * i.Quantity),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            TempDb.Receipts.Add(receipt);
+
+            foreach (var item in cartItems)
+            {
+                item.Processed = true;
+            }
+
+            return Ok(receipt);
+        }
+
     }
 }

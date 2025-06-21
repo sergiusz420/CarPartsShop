@@ -18,6 +18,7 @@ namespace CarPartsShop.Data
 
         public static List<Customer> Customers { get; set; } = [];
 
+        public static List<Receipt> Receipts { get; set; } = new();
     }
 
 }
