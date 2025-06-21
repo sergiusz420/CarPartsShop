@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CarPartsShop.Models;
+﻿using CarPartsShop.Models;
 
 
 namespace CarPartsShop.Data

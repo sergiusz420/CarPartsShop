@@ -1,5 +1,4 @@
-﻿using System;
-namespace CarPartsShop.Models
+﻿namespace CarPartsShop.Models
 {
     public class Product : BaseModel
     {

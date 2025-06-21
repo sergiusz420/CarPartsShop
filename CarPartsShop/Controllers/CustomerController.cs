@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using CarPartsShop.Models;
-using CarPartsShop.Data;
+﻿using CarPartsShop.Data;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace CarPartsShop.Controllers
