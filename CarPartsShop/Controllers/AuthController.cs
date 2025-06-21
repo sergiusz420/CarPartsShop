@@ -1,4 +1,5 @@
 ﻿using CarPartsShop.Data;
+using CarPartsShop.DTOs;
 using CarPartsShop.Models;
 using CarPartsShop.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -53,6 +54,25 @@ namespace CarPartsShop.Controllers
         public IActionResult AdminOnly()
         {
             return Ok("You are better than others (because you have more rights) :).");
+        }
+
+        [Authorize]
+        [HttpPut("edit")]
+        public IActionResult EditAccount([FromBody] EditAccountDto dto)
+        {
+            var email = User.Identity?.Name;
+
+            var user = TempDb.Customers.FirstOrDefault(c => c.Email == email);
+            if (user == null) return NotFound("User does not exist.");
+
+            user.FullName = dto.FullName;
+
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+            {
+                user.Password = dto.Password;
+            }
+
+            return Ok("Account details have been updated..");
         }
     }
 }
