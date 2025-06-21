@@ -1,10 +1,12 @@
 ﻿using CarPartsShop.Data;
 using CarPartsShop.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
 namespace CarPartsShop.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ProductController : ControllerBase
@@ -23,6 +25,7 @@ namespace CarPartsShop.Controllers
             return Ok(product);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Create(Product product)
         {
@@ -33,6 +36,7 @@ namespace CarPartsShop.Controllers
             return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public IActionResult Update(int id, Product updated)
         {
@@ -51,6 +55,7 @@ namespace CarPartsShop.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {

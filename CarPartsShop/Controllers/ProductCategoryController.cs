@@ -1,5 +1,6 @@
 ﻿using CarPartsShop.Data;
 using CarPartsShop.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -23,6 +24,7 @@ namespace CarPartsShop.Controllers
             return Ok(category);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Create(ProductCategory category)
         {
@@ -31,6 +33,7 @@ namespace CarPartsShop.Controllers
             return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public IActionResult Update(int id, ProductCategory updated)
         {
@@ -41,6 +44,7 @@ namespace CarPartsShop.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {

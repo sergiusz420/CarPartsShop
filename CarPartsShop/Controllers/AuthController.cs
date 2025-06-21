@@ -1,6 +1,7 @@
 ﻿using CarPartsShop.Data;
 using CarPartsShop.Models;
 using CarPartsShop.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarPartsShop.Controllers
@@ -45,6 +46,13 @@ namespace CarPartsShop.Controllers
                 user.FullName,
                 user.Role
             });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin-only")]
+        public IActionResult AdminOnly()
+        {
+            return Ok("You are better than others (because you have more rights) :).");
         }
     }
 }
