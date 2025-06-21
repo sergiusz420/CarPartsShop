@@ -15,6 +15,9 @@ namespace CarPartsShop.Data
             FullName = "Jan Kowalski",
             Email = "jan.kowalski@example.com"
         };
+
+        public static List<Customer> Customers { get; set; } = [];
+
     }
 
 }
