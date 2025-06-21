@@ -1,0 +1,67 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System;
+using CarPartsShop.Models;
+using CarPartsShop.Data;
+
+
+namespace CarPartsShop.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ProductController : ControllerBase
+    {
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            return Ok(TempDb.Products);
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetById(int id)
+        {
+            var product = TempDb.Products.FirstOrDefault(p => p.Id == id);
+            if (product == null) return NotFound();
+            return Ok(product);
+        }
+
+        [HttpPost]
+        public IActionResult Create(Product product)
+        {
+            product.Id = TempDb.Products.Count + 1;
+            product.CreatedAt = DateTime.UtcNow;
+            product.CreatedBy = Guid.NewGuid(); // Symulacja
+            TempDb.Products.Add(product);
+            return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, Product updated)
+        {
+            var product = TempDb.Products.FirstOrDefault(p => p.Id == id);
+            if (product == null) return NotFound();
+
+            product.Name = updated.Name;
+            product.Ean = updated.Ean;
+            product.Price = updated.Price;
+            product.Stock = updated.Stock;
+            product.Sku = updated.Sku;
+            product.Category = updated.Category;
+            product.UpdatedAt = DateTime.UtcNow;
+            product.UpdatedBy = Guid.NewGuid();
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var product = TempDb.Products.FirstOrDefault(p => p.Id == id);
+            if (product == null) return NotFound();
+
+            product.Deleted = true;
+            return NoContent();
+        }
+    }
+}
+
