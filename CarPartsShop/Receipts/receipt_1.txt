@@ -1,0 +1,8 @@
+--- Receipt #1 ---
+Date: 22.06.2025 09:50:56
+Client: klient@shop.pl
+Products:
+- Tarcze hamulcowe przód x2 = 421,00 zł
+Sum: 421,00 zł
+
+(Simulation: a receipt was sent to klient@shop.pl)

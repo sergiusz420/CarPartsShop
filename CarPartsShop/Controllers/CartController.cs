@@ -60,7 +60,9 @@ namespace CarPartsShop.Controllers
         {
             var email = User.Identity?.Name;
 
-            var cartItems = TempDb.CartItems.Where(c => c.CustomerEmail == email && !c.Processed).ToList();
+            var cartItems = TempDb.CartItems
+                .Where(c => c.CustomerEmail == email && !c.Processed && !c.Deleted)
+                .ToList();
 
             if (!cartItems.Any())
                 return BadRequest("Cart is empty or already processed.");
@@ -88,8 +90,33 @@ namespace CarPartsShop.Controllers
                 item.Processed = true;
             }
 
+            //E-mail receipt simulation
+            var receiptText = $"--- Receipt #{receipt.Id} ---\n" +
+                              $"Date: {receipt.CreatedAt}\n" +
+                              $"Client: {receipt.CustomerEmail}\n" +
+                              $"Products:\n";
+
+            foreach (var item in receipt.Items)
+            {
+                receiptText += $"- {item.ProductName} x{item.Quantity} = {item.Price * item.Quantity} zł\n";
+            }
+
+            receiptText += $"Sum: {receipt.TotalAmount} zł\n\n" +
+                           $"(Simulation: a receipt was sent to {receipt.CustomerEmail})";
+
+            // Output to console (simulating email sending)
+            Console.WriteLine(receiptText);
+
+            // Save receipt to a file
+            var dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Receipts");
+            Directory.CreateDirectory(dirPath);
+            var filePath = Path.Combine(dirPath, $"receipt_{receipt.Id}.txt");
+            System.IO.File.WriteAllText(filePath, receiptText);
+
             return Ok(receipt);
         }
 
     }
+
 }
+
