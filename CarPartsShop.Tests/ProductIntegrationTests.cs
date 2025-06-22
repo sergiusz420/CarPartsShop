@@ -1,105 +1,122 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Xunit;
 
 namespace CarPartsShop.Tests
 {
-    public class ProductIntegrationTests(WebApplicationFactory<CarPartsShop.Program> factory) : IClassFixture<WebApplicationFactory<CarPartsShop.Program>>
+    public class ProductIntegrationTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
     {
-        private readonly HttpClient _client = factory.CreateClient();
+        private readonly WebApplicationFactory<Program> _factory = factory;
 
         [Fact]
-        public async Task GetAllProducts_ReturnsSuccess()
+        public async Task GetAllProducts_AsAdmin_ReturnsOk()
         {
+            // Arrange
+            var client = await GetAuthorizedClientAsync("admin@shop.pl", "admin123");
+
             // Act
-            var response = await _client.GetAsync("/api/product");
+            var response = await client.GetAsync("/api/product");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
-        public async Task CreateProduct_ReturnsCreated()
+        public async Task CreateProduct_AsAdmin_ReturnsCreated()
         {
             // Arrange
+            var client = await GetAuthorizedClientAsync("admin@shop.pl", "admin123");
+
             var newProduct = new
             {
                 name = "Nowy produkt",
-                ean = "1234567890123",
+                ean = "1234563",
                 price = 199.99,
                 stock = 5,
                 sku = "SKU123",
                 category = "Hamulce"
             };
 
-            var content = new StringContent(
-                System.Text.Json.JsonSerializer.Serialize(newProduct),
-                System.Text.Encoding.UTF8,
-                "application/json");
-
             // Act
-            var response = await _client.PostAsync("/api/product", content);
+            var response = await client.PostAsJsonAsync("/api/product", newProduct);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("CreateProduct RESPONSE: " + content);
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         }
 
         [Fact]
-        public async Task UpdateProduct_ReturnsNoContent_WhenValid()
+        public async Task UpdateProduct_AsAdmin_ReturnsNoContent()
         {
-            // Add product
+            // Arrange
+            var client = await GetAuthorizedClientAsync("admin@shop.pl", "admin123");
+
             var originalProduct = new
             {
-                name = "Stary produkt",
-                ean = "1111111111111",
+                name = "Produkt testowy",
+                ean = "111111",
                 price = 100.0,
                 stock = 10,
-                sku = "SKU111",
-                category = "Silnik"
+                sku = "SKU001",
+                category = "Test"
             };
 
-            var content = new StringContent(
-                System.Text.Json.JsonSerializer.Serialize(originalProduct),
-                System.Text.Encoding.UTF8,
-                "application/json");
+            var postResp = await client.PostAsJsonAsync("/api/product", originalProduct);
+            var postContent = await postResp.Content.ReadAsStringAsync();
+            Console.WriteLine("POST: " + postContent);
 
-            var postResponse = await _client.PostAsync("/api/product", content);
-            postResponse.EnsureSuccessStatusCode();
+            postResp.EnsureSuccessStatusCode();
 
-            // Read new product ID
-            var responseContent = await postResponse.Content.ReadAsStringAsync();
-            var created = System.Text.Json.JsonSerializer.Deserialize<ProductResponse>(responseContent,
-                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var created = JsonSerializer.Deserialize<ProductResponse>(postContent,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            // Product update
-            var updatedProduct = new
+            var updated = new
             {
-                id = created.Id,
-                name = "Zaktualizowany produkt",
-                ean = "9999999999999",
+                id = created!.Id,
+                name = "Zmieniony produkt",
+                ean = "2222222222222",
                 price = 150.0,
-                stock = 5,
-                sku = "SKU999",
+                stock = 3,
+                sku = "SKU002",
                 category = "Zawieszenie"
             };
 
-            var putContent = new StringContent(
-                System.Text.Json.JsonSerializer.Serialize(updatedProduct),
-                System.Text.Encoding.UTF8,
-                "application/json");
-
-            var putResponse = await _client.PutAsync($"/api/product/{created.Id}", putContent);
+            // Act
+            var putResponse = await client.PutAsJsonAsync($"/api/product/{created.Id}", updated);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, putResponse.StatusCode);
+        }
+
+        private async Task<HttpClient> GetAuthorizedClientAsync(string email, string password)
+        {
+            var client = _factory.CreateClient();
+
+            var loginData = new { Email = email, Password = password };
+            var loginResponse = await client.PostAsJsonAsync("/api/auth/login", loginData);
+
+            var loginBody = await loginResponse.Content.ReadAsStringAsync();
+            Console.WriteLine("LOGIN RESPONSE: " + loginBody);
+
+            loginResponse.EnsureSuccessStatusCode();
+
+            var json = await loginResponse.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+            var token = json!["token"];
+
+            var authClient = _factory.CreateClient();
+            authClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            return authClient;
         }
 
         public class ProductResponse
         {
             public int Id { get; set; }
         }
-
-
     }
-
-
 }

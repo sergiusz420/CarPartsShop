@@ -43,5 +43,24 @@ namespace CarPartsShop.Tests
             Assert.IsType<NoContentResult>(result);
             Assert.True(TempDb.Categories[0].Deleted);
         }
+
+        [Fact]
+        public void GetById_ReturnsCategory_WhenExists()
+        {
+            // Arrange
+            TempDb.Categories = [
+                new ProductCategory { Id = 5, Name = "TestCat" }
+            ];
+            var controller = new ProductCategoryController();
+
+            // Act
+            var result = controller.GetById(5) as OkObjectResult;
+
+            // Assert
+            Assert.NotNull(result);
+            var category = result.Value as ProductCategory;
+            Assert.Equal("TestCat", category.Name);
+        }
+
     }
 }

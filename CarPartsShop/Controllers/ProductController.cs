@@ -31,7 +31,7 @@ namespace CarPartsShop.Controllers
         {
             product.Id = TempDb.Products.Count + 1;
             product.CreatedAt = DateTime.UtcNow;
-            product.CreatedBy = Guid.NewGuid(); // Symulacja
+            product.CreatedBy = Guid.NewGuid();
             TempDb.Products.Add(product);
             return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
         }
